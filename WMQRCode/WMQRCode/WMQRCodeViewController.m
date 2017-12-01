@@ -49,10 +49,24 @@
 @property (nonatomic,strong) AVCaptureSession *session;
 @property (nonatomic,weak) AVCaptureMetadataOutput *output;
 @property (nonatomic,retain) UIImageView *lineIV;
+/** 扫描支持的编码格式的数组 */
+@property (nonatomic, strong) NSMutableArray * metadataObjectTypes;
 
 @end
 
 @implementation WMQRCodeViewController
+- (NSMutableArray *)metadataObjectTypes{
+    if (!_metadataObjectTypes) {
+        _metadataObjectTypes = [NSMutableArray arrayWithObjects:AVMetadataObjectTypeAztecCode, AVMetadataObjectTypeCode128Code, AVMetadataObjectTypeCode39Code, AVMetadataObjectTypeCode39Mod43Code, AVMetadataObjectTypeCode93Code, AVMetadataObjectTypeEAN13Code, AVMetadataObjectTypeEAN8Code, AVMetadataObjectTypePDF417Code, AVMetadataObjectTypeQRCode, AVMetadataObjectTypeUPCECode, nil];
+        
+        // >= iOS 8
+        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
+            [_metadataObjectTypes addObjectsFromArray:@[AVMetadataObjectTypeInterleaved2of5Code, AVMetadataObjectTypeITF14Code, AVMetadataObjectTypeDataMatrixCode]];
+        }
+    }
+    
+    return _metadataObjectTypes;
+}
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
     [self dismissViewControllerAnimated:YES completion:^{
         // [[UIApplication sharedApplication]setStatusBarStyle:UIStatusBarStyleDefault];
@@ -210,23 +224,21 @@
         [_session addOutput:output];
     }
     self.output = output;
-    //设置扫描范围
-    output.rectOfInterest = CGRectMake(0.2f, 0.2f, 0.8f, 0.8f);
     
-        NSArray *arrTypes = output.availableMetadataObjectTypes;
-        NSLog(@"%@",arrTypes);
+    NSArray *arrTypes = output.availableMetadataObjectTypes;
+    NSLog(@"%@",arrTypes);
     
     if ([_output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode] || [_output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeCode128Code]) {
-        _output.metadataObjectTypes = @[AVMetadataObjectTypeQRCode];
+        output.metadataObjectTypes = self.metadataObjectTypes;
         // [_session startRunning];
     } else {
         [_session stopRunning];
-//        rightButton.enabled = NO;
+        //        rightButton.enabled = NO;
         UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"抱歉!" message:@"相机权限被拒绝，请前往设置-隐私-相机启用此应用的相机权限。" delegate:self cancelButtonTitle:nil otherButtonTitles:@"确定", nil];
         [alert show];
         return;
     }
-//    output.metadataObjectTypes = @[@"org.iso.QRCode"];
+    
 
     UIImageView *codeFrame = [[UIImageView alloc] initWithFrame:preView.frame];
     codeFrame.contentMode = UIViewContentModeScaleAspectFit;
@@ -336,13 +348,17 @@
 {
     //判断是否有数据
     if (metadataObjects != nil && [metadataObjects count] > 0) {
-
+        
         AVMetadataMachineReadableCodeObject *metadataObj = [metadataObjects objectAtIndex:0];
         //判断回传的数据类型
         if ([[metadataObj type] isEqualToString:AVMetadataObjectTypeQRCode]) {
-
+            
             NSLog(@"stringValue = %@",metadataObj.stringValue);
             [self checkQRcode:metadataObj.stringValue];
+        }else{
+            NSLog(@"stringValue = %@",metadataObj.stringValue);
+            [self checkQRcode:metadataObj.stringValue];
+            
         }
     }
     [_session stopRunning];

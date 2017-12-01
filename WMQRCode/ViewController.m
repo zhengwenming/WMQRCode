@@ -21,6 +21,7 @@
     UIButton *centerBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     centerBtn.frame = CGRectMake(0, 0, 100, 40);
     centerBtn.backgroundColor = [UIColor redColor];
+    [centerBtn setTitle:@"扫描" forState:UIControlStateNormal];
     [centerBtn addTarget:self action:@selector(scanQrcode) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:centerBtn];
     centerBtn.center = self.view.center;
