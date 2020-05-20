@@ -38,7 +38,7 @@
     UIButton *theLightBtn;
     BOOL hasTheVC;
     BOOL isFirst;
-    BOOL upOrdown;
+    BOOL isUp;
     int num;
     AVCaptureVideoPreviewLayer *preView;
     AVCaptureDevice *captureDevice;
@@ -118,7 +118,7 @@
 }
 -(void)initUI{
     isFirst=YES;
-    upOrdown = NO;
+    isUp = NO;
     num =0;
     // 自定义导航右按钮
     NSString *name = [@"Resource.bundle" stringByAppendingPathComponent:@"fromPhoto"];
@@ -296,8 +296,7 @@
     isLightOn = 1 - isLightOn;
     if (isLightOn) {
         [self turnOnLed:YES];
-    }
-    else {
+    }else {
         [self turnOffLed:YES];
     }
 }
@@ -317,28 +316,18 @@
 - (void)showTheQRCodeOfMine:(UIButton *)sender {
     NSLog(@"showTheQRCodeOfMine");
 }
-- (void)animation {
-    
-    if (upOrdown == NO) {
+- (void)animation {    
+    if (isUp == NO) {
         num ++;
         _lineIV.frame = CGRectMake(preView.frame.origin.x, preView.frame.origin.y + 2 * num, preView.frame.size.width, 5);
-        if (IS_IPHONE5||IS_IPHONE4) {
-            if (2 * num == preView.frame.size.height) {
-                upOrdown = YES;
-            }
+         if (2 * num >= preView.frame.size.height) {
+             isUp = YES;
         }
-        else {
-            if (2 * num == preView.frame.size.height - 3) {
-                upOrdown = YES;
-            }
-        }
-    }
-    else {
+    }else {
         num --;
         _lineIV.frame = CGRectMake(preView.frame.origin.x, preView.frame.origin.y + 2 * num, preView.frame.size.width, 5);
-        
         if (num == 0) {
-            upOrdown = NO;
+            isUp = NO;
         }
     }
 }
